@@ -1,16 +1,16 @@
-#include <iostream>
-#include <fstream>
+#include <stdio.h>
 
 int main()
 {
-    std::ifstream fp;
-    fp.open("../test/a.cpp");
-    char str[100] = {0};
-
-    while (!fp.eof())
+    int a = 0;
+    int b = 0;
+    while (a < 10)
     {
-        fp.read(str,1);
-        std::cout << str;
+        a = a + 1;
+        if (b > 10000000)
+        {
+            break;
+        }
     }
     return 0;
 }

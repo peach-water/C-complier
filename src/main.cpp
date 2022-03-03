@@ -1,20 +1,20 @@
 #include <iostream>
 #include <fstream>
+#include "../head/Token.h"
+
 
 int main()
 {
     std::ifstream fp;
-    fp.open("../test/a.cpp");
-    char buf;
+    fp.open("./test/a.cpp");
+    char buf[100];
 
-    while (true)
+    while (!fp.eof())
     {
-        fp.read(&buf,sizeof(buf));
-        if(fp.eof())break;
+        fp.getline(buf,sizeof(buf));
 
-        
-        std::cout << buf;
+        std::cout << buf << std::endl;
     }
-    std::cout << std::endl;
+    std::cout << std::endl << std::endl;
     return 0;
 }
