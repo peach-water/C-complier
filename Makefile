@@ -5,16 +5,20 @@ h_objects = ./head/Token.h
 lex = flex
 
 b: $(objects)
-	@$(CXX) $(objects) -o main
-	@./main
+	@-mkdir build
+	@$(CXX) $(objects) -o ./build/main
+	@./build/main
 
 lb: $(l_objects)
+	@-mkdir build
 	@$(lex) $<
-	@$(CC) ./lex.yy.c -o Token
-	@./Token < ./test/a.cpp
+	@$(CC) ./lex.yy.c -o ./build/Token
+	@./build/Token < ./test/a.cpp
 
 
 clean:
+	@echo cleaning
+	@-rm -r ./build ./lex.yy.c ./analysis.a
 clear:
 	@echo cleaning
-	@-rm ./main ./Token ./src/lex.yy.c ./lex.yy.c
+	@-rm -r ./build ./lex.yy.c ./analysis.a

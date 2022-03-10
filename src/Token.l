@@ -38,7 +38,6 @@ SINGLE_COMMENT2     ("#"[^\n]*)
 "break"             { return T_Break;           }
 "continue"          { return T_Continue;        }
 "print"             { return T_Print;           }
-"readint"           { return T_ReadInt;         }
 
 {INTEGER}           { return T_IntConstant;     }
 {STRING}            { return T_StringConstant;  }
@@ -54,10 +53,16 @@ SINGLE_COMMENT2     ("#"[^\n]*)
 int main(int argc, char* argv[]) {
     int token;
     init_scanner();
+    FILE *fp = fopen("./analysis.a","w");
     while (token = yylex()) {
-        print_token(token);
-        puts(yytext);
+        printf("%-20s",print_token(token));
+        printf("%-10s\t", yytext);
+        printf("%d\n",token);
+        fprintf(fp,"%-20s",print_token(token));
+        fprintf(fp,"%-10s",yytext);
+        fprintf(fp,"\t%d\n",token);
     }
+    fclose(fp);
     return 0;
 }
 
