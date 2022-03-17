@@ -6,8 +6,13 @@
 int main()
 {
     std::ifstream fp;
-    fp.open("./test/a.cpp");
+    fp.open("./test/demo.c");
     char buf[100];
+
+    if(!fp.is_open()){
+        std::cout << "file open error" << std::endl;
+        return 0;
+    }
 
     while (!fp.eof())
     {

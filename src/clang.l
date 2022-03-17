@@ -7,19 +7,18 @@ void lex_error(char* msg, int line);
 
 /* Definitions, note: \042 is '"' */
 INTEGER             ([0-9]+)
+FLOAT               ([0-9]+.[0-9]+)
 UNTERM_STRING       (\042[^\042\n]*)
 STRING              (\042[^\042\n]*\042)
 IDENTIFIER          ([_a-zA-Z][_a-zA-Z0-9]*)
 OPERATOR            ([+*-/%=,;!<>(){}])
-SINGLE_COMMENT1     ("//"[^\n]*)
-SINGLE_COMMENT2     ("#"[^\n]*)
+SINGLE_COMMENT      ("//"[^\n]*)
 
 %%
 
 [\n]                { cur_line_num++;                       }
 [ \t\r\a]+          { /* ignore all spaces */               }
-{SINGLE_COMMENT1}   { /* skip for single line comment */    }
-{SINGLE_COMMENT2}   { /* skip for single line commnet */    }
+{SINGLE_COMMENT}    { /* skip for single line comment */    }
 
 {OPERATOR}          { return yytext[0];         }   
 
@@ -31,17 +30,20 @@ SINGLE_COMMENT2     ("#"[^\n]*)
 "||"                { return T_Or;              }
 "void"              { return T_Void;            }
 "int"               { return T_Int;             }
+"float"             { return T_Float;           }
 "while"             { return T_While;           }
 "if"                { return T_If;              }
 "else"              { return T_Else;            }
 "return"            { return T_Return;          }
 "break"             { return T_Break;           }
 "continue"          { return T_Continue;        }
-"print"             { return T_Print;           }
+"printf"            { return T_Printf;          }
+"scanf"             { return T_Scanf;           }
 
 {INTEGER}           { return T_IntConstant;     }
 {STRING}            { return T_StringConstant;  }
 {IDENTIFIER}        { return T_Identifier;      }
+{FLOAT}             { return T_FloatConstant;   }
 
 <<EOF>>             { return 0; }
 
@@ -53,11 +55,11 @@ SINGLE_COMMENT2     ("#"[^\n]*)
 int main(int argc, char* argv[]) {
     int token;
     init_scanner();
-    FILE *fp = fopen("./analysis.a","w");
+    FILE *fp = fopen("./Token.txt","w");
     while (token = yylex()) {
-        printf("%-20s",print_token(token));
-        printf("%-10s\t", yytext);
-        printf("%d\n",token);
+        // printf("%-20s",print_token(token));
+        // printf("%-10s\t", yytext);
+        // printf("%d\n",token);
         fprintf(fp,"%-20s",print_token(token));
         fprintf(fp,"%-10s",yytext);
         fprintf(fp,"\t%d\n",token);
