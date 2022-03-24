@@ -1,7 +1,11 @@
 %{
-#include "./head/Token.h" 
+// #include "../head/Token.h" 
+#define YYSTYPE char *
+#include "y.lab.h"
+#define _DUPTEXT {yylval = strdup(yytext);}
+void yyerror(const char* msg);
 int cur_line_num = 1;
-void init_scanner();
+void unrecognized_char(char c);
 void lex_error(char* msg, int line);
 %}
 
@@ -38,12 +42,13 @@ SINGLE_COMMENT      ("//"[^\n]*)
 "break"             { return T_Break;           }
 "continue"          { return T_Continue;        }
 "printf"            { return T_Printf;          }
+"print"             { return T_Printf;          }
 "scanf"             { return T_Scanf;           }
 
-{INTEGER}           { return T_IntConstant;     }
-{STRING}            { return T_StringConstant;  }
-{IDENTIFIER}        { return T_Identifier;      }
-{FLOAT}             { return T_FloatConstant;   }
+{INTEGER}           { _DUPTEXT; return T_IntConstant;     }
+{STRING}            { _DUPTEXT; return T_StringConstant;  }
+{IDENTIFIER}        { _DUPTEXT; return T_Identifier;      }
+{FLOAT}             { _DUPTEXT; return T_FloatConstant;   }
 
 <<EOF>>             { return 0; }
 
@@ -52,28 +57,34 @@ SINGLE_COMMENT      ("//"[^\n]*)
 
 %%
 
-int main(int argc, char* argv[]) {
-    int token;
-    init_scanner();
-    FILE *fp = fopen("./Token.txt","w");
-    while (token = yylex()) {
-        // printf("%-20s",print_token(token));
-        // printf("%-10s\t", yytext);
-        // printf("%d\n",token);
-        fprintf(fp,"%-20s",print_token(token));
-        fprintf(fp,"%-10s",yytext);
-        fprintf(fp,"\t%d\n",token);
-    }
-    fclose(fp);
-    return 0;
+// int main(int argc, char* argv[]) {
+//     int token;
+//     FILE *fp = fopen("./Token.txt","w");
+//     while (token = yylex()) {
+//         printf("%-20s",print_token(token));
+//         printf("%-10s\t", yytext);
+//         printf("%d\n",token);
+//         fprintf(fp,"%-20s",print_token(token));
+//         fprintf(fp,"%-10s",yytext);
+//         fprintf(fp,"\t%d\n",token);
+//     }
+//     fclose(fp);
+//     return 0;
+// }
+
+void yyerror(const char *msg){
+    printf("Error at line %d:\n\t%s\n", cur_line_num, msg);
+    exit(-1);
 }
 
-void init_scanner() {
-    printf("%-20s%s\n", "TOKEN-TYPE", "TOKEN-VALUE");
-    printf("-------------------------------------------------\n");
+void unrecognized_char(char c){
+    char buf[32] = "Unrecognized ?";
+    buf[13] = c;
+    buf[14] = 0;
+    yyerror(buf);
 }
 
-void lex_error(char* msg, int line) {
+void lex_error(char* msg, int line){
     printf("\nError at line %-3d: %s\n\n", line, msg);
 }
 
