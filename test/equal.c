@@ -1,20 +1,26 @@
 // mcc
 
+//#include "mcc.h"
+
 int main() {
-    int a, b;
-    float c, d;
-
-    c = 2;
-    d = c * 2;
-    a = sum(c, d);
-    b = sum(d, a);
-
-    printf("c = %d d = %d", c, d);
-
+    int i;
+    i = 0;
+    while (i < 10) {
+        i = i + 1;
+        if (i == 3 || i == 5){
+            continue;
+        }
+        if (i == 8){
+            break;
+        }
+        print("%d! = %d", i, factor(i));
+    }
     return 0;
 }
 
-int sum(int a, float b){
-    int c, d;
-    return a + b;
+int factor(int n){
+    if (n < 2){
+        return 1;
+    }
+    return n * factor(n - 1);
 }
