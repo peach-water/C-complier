@@ -110,7 +110,7 @@ Actuals:
 ;
 
 ReturnStmt:
-    T_Return Expr ';'           { printf("\tret `\n\n");        }
+    T_Return Expr ';'           { printf("\tret ~\n\n");        }
 |   T_Return ';'                { printf("\tret \n\n");         }
 ;
 
@@ -185,6 +185,10 @@ VarDecl:
     T_Int T_Identifier          { printf("int %s", $2);         }
 |   T_Float T_Identifier        { printf("float %s", $2);       }
 |   VarDecl ',' T_Identifier    { printf(", %s", $3);           }
+// |   T_Int T_Identifier '=' T_IntConstant
+//                                 { printf("int %s\n", $2);printf("\tpush %s", $4);           }
+// |   T_Float T_Identifier '=' T_FloatConstant
+//                                 { printf("float %s\n", $2);printf("\tpush %s", $4);         }
 ;
 
 Scanf:
@@ -207,8 +211,9 @@ Expr:
 |   Expr T_And Expr             { printf("\tand\n");            }
 |   '-' Expr %prec '!'          { printf("\tneg\n");            }
 |   '!' Expr                    { printf("\tnot\n");            }
-|   T_IntConstant               { printf("\tpush %s\n", $1);      }
-|   T_Identifier                { printf("\tpush %s\n", $1);      }
+|   T_IntConstant               { printf("\tpush %s\n", $1);    }
+|   T_FloatConstant             { printf("\tpush %s\n", $1);    }
+|   T_Identifier                { printf("\tpush %s\n", $1);    }
 |   Scanf                       { /* empty */                   }
 |   CallExpr                    { /* empty */                   }
 |   '(' Expr ')'                { /* empty */                   }
