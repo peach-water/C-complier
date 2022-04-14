@@ -20,7 +20,7 @@ BIN = mcc
 # build简写
 b: lb yb
 	@-mkdir bin
-	@$(CC) ./build/*.c -o ./bin/$(BIN).o
+	@$(CC) ./build/*.c -o ./bin/$(BIN).bin
 # 词法分析器生成
 lb: $(l_objects) yb
 	@$(lex) -o ./build/clang.c $(l_objects)
@@ -29,8 +29,11 @@ yb: $(y_objexts)
 	@-mkdir build
 	@$(bis) -vdty $(y_objexts) -o ./build/y.lab.c
 # run
-r: b
-	@./bin/$(BIN).o < ./test/equal.c > out.asm
+r: 
+	@python3 ./ll.py > ll.txt
+	@python3 ./lr.py > lr.txt
+#	@./bin/$(BIN).bin < ./test/equal.c > out.asm
+
 
 # unitTest
 ut: lb
