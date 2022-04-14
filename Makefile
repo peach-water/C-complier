@@ -1,8 +1,6 @@
 objects = main
 l_objects = ./src/clang.l
-h_objects = ./head/*.h
-o_objects = ./build/Token.o
-t_objects = ./test/demo.c
+t_objects = equal
 y_objexts = ./src/*.y
 
 lex = flex
@@ -30,11 +28,12 @@ yb: $(y_objexts)
 	@$(bis) -vdty $(y_objexts) -o ./build/y.lab.c
 # run
 r: b
-	@./bin/$(BIN).o < ./test/equal.c > out.asm
+	@./bin/$(BIN).o < ./test/$(t_objects).c > ./out.asm
 
 # unitTest
-ut: lb
-	@$(o_objects) < $(t_objects) > ./out.asm
+ut: b
+	@./bin/$(BIN).o < ./test/$(t_objects).c > ./$(t_objects).asm
+	@./bin/$(BIN).o < ./test/demo.c > ./out.asm
 
 clean:
 	@echo cleaning
