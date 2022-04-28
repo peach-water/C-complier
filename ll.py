@@ -75,6 +75,8 @@ def LL(equal):
         # 规约
         try:
             temp = nextState(stack[-1], '#')
+            print("%2s -> %18s"%(stack[-1], str(temp)), end='  ')
+            print(stack)
             stack.pop(-1)
             for i in range(len(temp)-1, -1, -1):
                 if temp[i] != '#':
@@ -93,6 +95,12 @@ if __name__ == "__main__":
     with open("./test/equal.txt", "r") as fp:
         equal = fp.readlines()
     fp.close()
+
+    # print("分析 %s"%(equal[0]))
+    # temp = equal[0].split()
+    # LL(equal=temp)
+    # print()
+
     for i in range(len(equal)):
         print("分析 %s"%(equal[i]))
         temp = equal[i].split()
