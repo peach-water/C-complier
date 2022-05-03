@@ -30,7 +30,7 @@ yb: $(y_objexts)
 	@$(bis) -vdty $(y_objexts) -o ./build/y.lab.c
 # run
 r: 
-	@python3 quat.py > output.txt
+	@python3 ll.py > output.txt
 #	@./bin/$(BIN).bin < ./test/equal.c > out.asm
 
 
