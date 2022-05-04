@@ -85,27 +85,27 @@ def LL(equal):
 
     while index < len(equal):
         try:
+            if stack[-1] in "+-*/":
+                q = generate([sematic_stack[-2], stack[-1], sematic_stack[-1]])
+                stack.pop(-1)
+                sematic_stack = sematic_stack[:-2]
+                sematic_stack.append(q[3])
+                print(q)
             temp = nextState(stack[-1], equal[index])
             # print("%2s -> %18s" % (stack[-1], str(temp)), end='  ')
             # print(stack)
             if temp[0] == 'identify' and identify(equal[index]) or equal[index] == temp[0]:
                 if identify(equal[index]):
                     sematic_stack.append(equal[index])
-                    if len(sematic_stack) > 2 and sematic_stack[-2] != '(':
-                        if sematic_stack[-2] in "*/" or (equal[index+1] not in "*/"):
-                            q = generate(sematic_stack[-3:])
-                            sematic_stack = sematic_stack[:-3]
-                            sematic_stack.append(q[3])
-                            print(q)
-                else:
-                    sematic_stack.append(equal[index])
+                    temp.pop(0)
+                elif temp[0] in "+/-*":
+                    swap = temp[0]
+                    temp[0] = temp[1]
+                    temp[1] = swap
+                elif temp[0] == '(':
+                    temp.pop(0)
                 index += 1
-                temp.pop(0)
             elif equal[index] == ')' and stack[-1] == ')':
-                if sematic_stack[-2] == '(':
-                    t = sematic_stack[-1]
-                    sematic_stack = sematic_stack[:-2]
-                    sematic_stack.append(t)
                 index += 1
 
             stack.pop(-1)
@@ -113,12 +113,18 @@ def LL(equal):
                 if temp[i] != '#':
                     stack.append(temp[i])
         except:
-            print("errro")
+            print("不完整的表达式")
             return
 
     while stack[-1] != '#':
         # 规约
         try:
+            if stack[-1] in "+-*/":
+                q = generate([sematic_stack[-2], stack[-1], sematic_stack[-1]])
+                stack.pop(-1)
+                sematic_stack = sematic_stack[:-2]
+                sematic_stack.append(q[3])
+                print(q)
             temp = nextState(stack[-1], '#')
             # print("%2s -> %18s" % (stack[-1], str(temp)), end='  ')
             # print(stack)
@@ -131,14 +137,9 @@ def LL(equal):
 
     if index < len(equal) or stack[-1] != '#':
         # 最后检查规约失败
-        print("error")
+        print("表达式不完整")
         return
-    else:
-        while len(sematic_stack) > 1:
-            q = generate(sematic_stack[-3:])
-            sematic_stack = sematic_stack[:-3]
-            print(q)
-            sematic_stack.append(q[3])
+
     print("accept !!!")
 
 
