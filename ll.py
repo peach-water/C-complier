@@ -113,7 +113,6 @@ def LL(equal):
                 if temp[i] != '#':
                     stack.append(temp[i])
         except:
-            print("不完整的表达式")
             return
 
     while stack[-1] != '#':
@@ -137,7 +136,10 @@ def LL(equal):
 
     if index < len(equal) or stack[-1] != '#':
         # 最后检查规约失败
-        print("表达式不完整")
+        if stack[-1] != ')':
+            print("表达式不完整")
+        else:
+            print("括号不匹配")
         return
 
     print("accept !!!")
