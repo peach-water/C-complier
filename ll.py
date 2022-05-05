@@ -76,8 +76,8 @@ def generate(equal):
 
 
 def LL(equal):
-    # print("%20s%10s" % ("规约式", "栈顶"))
-    print("四元式计算过程")
+    print("%20s%20s%10s" % ("规约式", "规约四元式","栈顶"))
+    # print("四元式计算过程")
 
     index = 0
     stack = ['#', 'E']
@@ -85,15 +85,16 @@ def LL(equal):
 
     while index < len(equal):
         try:
+            q = ""
             if stack[-1] in "+-*/":
                 q = generate([sematic_stack[-2], stack[-1], sematic_stack[-1]])
                 stack.pop(-1)
                 sematic_stack = sematic_stack[:-2]
                 sematic_stack.append(q[3])
-                print(q)
             temp = nextState(stack[-1], equal[index])
-            # print("%2s -> %18s" % (stack[-1], str(temp)), end='  ')
-            # print(stack)
+            print("%2s -> %18s" % (stack[-1], str(temp)), end='  ')
+            print("%25s"%(q),end='  ')
+            print(stack)
             if temp[0] == 'identify' and identify(equal[index]) or equal[index] == temp[0]:
                 if identify(equal[index]):
                     sematic_stack.append(equal[index])
@@ -118,15 +119,16 @@ def LL(equal):
     while stack[-1] != '#':
         # 规约
         try:
+            q = ""
             if stack[-1] in "+-*/":
                 q = generate([sematic_stack[-2], stack[-1], sematic_stack[-1]])
                 stack.pop(-1)
                 sematic_stack = sematic_stack[:-2]
                 sematic_stack.append(q[3])
-                print(q)
             temp = nextState(stack[-1], '#')
-            # print("%2s -> %18s" % (stack[-1], str(temp)), end='  ')
-            # print(stack)
+            print("%2s -> %18s" % (stack[-1], str(temp)), end='  ')
+            print("%25s"%(q), end='  ')
+            print(stack)
             stack.pop(-1)
             for i in range(len(temp)-1, -1, -1):
                 if temp[i] != '#':
