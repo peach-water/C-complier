@@ -1,93 +1,72 @@
 %{
-// #include "../head/Token.h" 
 #define YYSTYPE char *
-#include "y.lab.h"
-#define _DUPTEXT {yylval = strdup(yytext);}
-void yyerror(const char* msg);
-int cur_line_num = 1;
+#include "y.tab.h"
+int cur_line = 1;
+void yyerror(const char *msg);
 void unrecognized_char(char c);
-void lex_error(char* msg, int line);
+void unterminate_string();
+#define _DUPTEXT {yylval = strdup(yytext);}
 %}
 
-/* Definitions, note: \042 is '"' */
+/* note \042 is '"' */
+WHITESPACE          ([ \t\r\a]+)
+SINGLE_COMMENT1     ("//"[^\n]*)
+SINGLE_COMMENT2     ("#"[^\n]*)
+OPERATOR            ([+*-/%=,;!<>(){}])
 INTEGER             ([0-9]+)
-FLOAT               ([0-9]+.[0-9]+)
+IDENTIFIER          ([_a-zA-Z][_a-zA-Z0-9]*)
 UNTERM_STRING       (\042[^\042\n]*)
 STRING              (\042[^\042\n]*\042)
-IDENTIFIER          ([_a-zA-Z][_a-zA-Z0-9]*)
-OPERATOR            ([+*-/%=,;!<>(){}])
-SINGLE_COMMENT      ("//"[^\n]*)
 
 %%
 
-[\n]                { cur_line_num++;                       }
-[ \t\r\a]+          { /* ignore all spaces */               }
-{SINGLE_COMMENT}    { /* skip for single line comment */    }
+\n                  { cur_line++; }
+{WHITESPACE}        { /* ignore every whitespace */ }
+{SINGLE_COMMENT1}   { /* skip for single line comment */    }
+{SINGLE_COMMENT2}   { /* skip for single line comment */    }
 
-{OPERATOR}          { return yytext[0];         }   
+{OPERATOR}          { return yytext[0]; }
+"int"               { return T_Int; }
+"void"              { return T_Void; }
+"return"            { return T_Return; }
+"print"             { return T_Print; }
+"readint"           { return T_ReadInt; }
+"while"             { return T_While; }
+"if"                { return T_If; }
+"else"              { return T_Else; }
+"break"             { return T_Break; }
+"continue"          { return T_Continue; }
+"<="                { return T_Le; }
+">="                { return T_Ge; }
+"=="                { return T_Eq; }
+"!="                { return T_Ne; }
+"&&"                { return T_And; }
+"||"                { return T_Or; }
 
-"<="                { return T_Le;              }
-">="                { return T_Ge;              }
-"=="                { return T_Eq;              }
-"!="                { return T_Ne;              }
-"&&"                { return T_And;             }
-"||"                { return T_Or;              }
-"void"              { return T_Void;            }
-"int"               { return T_Int;             }
-"float"             { return T_Float;           }
-"while"             { return T_While;           }
-"if"                { return T_If;              }
-"else"              { return T_Else;            }
-"return"            { return T_Return;          }
-"break"             { return T_Break;           }
-"continue"          { return T_Continue;        }
-"printf"            { return T_Printf;          }
-"print"             { return T_Printf;          }
-"scanf"             { return T_Scanf;           }
+{INTEGER}           { _DUPTEXT return T_IntConstant; }
+{STRING}            { _DUPTEXT return T_StringConstant; }
+{IDENTIFIER}        { _DUPTEXT return T_Identifier; }
 
-{INTEGER}           { _DUPTEXT; return T_IntConstant;     }
-{STRING}            { _DUPTEXT; return T_StringConstant;  }
-{IDENTIFIER}        { _DUPTEXT; return T_Identifier;      }
-{FLOAT}             { _DUPTEXT; return T_FloatConstant;   }
-
-<<EOF>>             { return 0; }
-
-{UNTERM_STRING}     { lex_error("Unterminated string constant", cur_line_num);  }
-.                   { lex_error("Unrecognized character", cur_line_num);        }
+{UNTERM_STRING}     { unterminate_string(); }
+.                   { unrecognized_char(yytext[0]); }
 
 %%
 
-// int main(int argc, char* argv[]) {
-//     int token;
-//     FILE *fp = fopen("./Token.txt","w");
-//     while (token = yylex()) {
-//         printf("%-20s",print_token(token));
-//         printf("%-10s\t", yytext);
-//         printf("%d\n",token);
-//         fprintf(fp,"%-20s",print_token(token));
-//         fprintf(fp,"%-10s",yytext);
-//         fprintf(fp,"\t%d\n",token);
-//     }
-//     fclose(fp);
-//     return 0;
-// }
-
-void yyerror(const char *msg){
-    printf("Error at line %d:\n\t%s\n", cur_line_num, msg);
-    exit(-1);
+int yywrap(void) { 
+    return 1;
 }
 
-void unrecognized_char(char c){
-    char buf[32] = "Unrecognized ?";
-    buf[13] = c;
-    buf[14] = 0;
+void unrecognized_char(char c) {
+    char buf[32] = "Unrecognized character: ?";
+    buf[24] = c;
     yyerror(buf);
 }
 
-void lex_error(char* msg, int line){
-    printf("\nError at line %-3d: %s\n\n", line, msg);
+void unterminate_string() {
+    yyerror("Unterminate string constant");
 }
 
-int yywrap(void) {
-    return 1;
+void yyerror(const char *msg) {
+    fprintf(stderr, "Error at line %d:\n\t%s\n", cur_line, msg);
+    exit(-1);
 }

@@ -1,7 +1,7 @@
 objects = main
 l_objects = ./src/clang.l
 t_objects = equal
-y_objexts = ./src/*.y
+y_objexts = ./src/gramma.y
 
 lex = flex
 bis = bison
@@ -18,29 +18,29 @@ BIN = mcc
 # build简写
 b: lb yb
 	@-mkdir bin
-	@$(CC) ./build/*.c -o ./bin/$(BIN).o
+	@$(CC) *.c -o ./bin/$(BIN).bin
+	@-rm ./y.* ./clang.c
 # 词法分析器生成
 lb: $(l_objects) yb
-	@$(lex) -o ./build/clang.c $(l_objects)
+	@$(lex) -o clang.c $(l_objects)
 # 语法分析器生成
 yb: $(y_objexts)
-	@-mkdir build
-	@$(bis) -vdty $(y_objexts) -o ./build/y.lab.c
+	@$(bis) -vdty $(y_objexts) -d
 # run
 r: b
 	@./bin/$(BIN).o < ./test/$(t_objects).c > ./out.asm
 
 # unitTest
 ut: b
-	@./bin/$(BIN).o < ./test/$(t_objects).c > ./$(t_objects).asm
-	@./bin/$(BIN).o < ./test/demo.c > ./out.asm
+	@./bin/$(BIN).bin ./test/$(t_objects).c 
+	@./bin/$(BIN).bin ./test/demo.c 
 
 clean:
 	@echo cleaning
-	@-rm -r ./build ./bin ./*.asm
+	@-rm -r ./bin ./test/*.asm ./test/*.inc ./y.* ./clang.c
 clear:
 	@echo cleaning
-	@-rm -r ./build ./bin ./*.asm
+	@-rm -r ./bin ./*.asm ./y.* ./clang.c
 
 #＄＊　不包含扩展名的目标文件名称
 
