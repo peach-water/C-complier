@@ -28,12 +28,11 @@ yb: $(y_objexts)
 	@$(bis) -vdty $(y_objexts) -d
 # run
 r: b
-	@./bin/$(BIN).o < ./test/$(t_objects).c > ./out.asm
+	@./bin/$(BIN).bin ./test/$(t_objects).c
 
 # unitTest
 ut: b
 	@./bin/$(BIN).bin ./test/$(t_objects).c 
-	@./bin/$(BIN).bin ./test/demo.c 
 
 clean:
 	@echo cleaning

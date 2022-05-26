@@ -15,6 +15,7 @@ int main() {
         }
 
     }
+    factor(i);
     return 0;
 }
 
