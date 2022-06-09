@@ -3,20 +3,15 @@
 int main()
 {
     int a ;
-    float b ;
     a = 5;
-    b  = 0.1;
     while (a < 10)
     {
         a = a + 1;
-        if (b > 10000000 && a < 10 || b > a)
+        if (a < 10 || 0 > a)
         {
-            printf("%s",a);
-            // scanf("%d",b);
-            break;
-        }else{
             break;
         }
     }
+    print("%d", 10);
     return 0;
 }
