@@ -1,8 +1,24 @@
 #include <stdarg.h>
 
 int print(char *str, int len){
-    int res = write(1, str, len);
-    return res;
+    // x86_64
+    // __asm__(
+    //     "movq $1, %rax\n\t"
+    //     "movq $1, %rid\n\t"
+    //     "movq -8(%rbp), %rsi\n\t"
+    //     "movl -12(%rbp), %edx\n\t"
+    //     "syscall\n\t"
+    // );
+    
+    // x86_32
+    __asm__(
+        "mov $4, %eax\n\t"
+        "mov $1, %ebx\n\t"
+        "mov 8(%ebp), %ecx\n\t"
+        "mov 12(%ebp), %edx\n\t"
+        "int $0x80\n\t"
+    );
+    return len;
 }
 
 // typedef char *va_list;
@@ -72,7 +88,7 @@ int printf_add_to_buffer(char *buffer, char c, int *idx, const int BUF_LEN)
     return counter;
 }
 
-int printf(const char *const fmt, ...)
+extern int printf(const char *const fmt, ...)
 {
     const int BUF_LEN = 32;
     int temp = 0;

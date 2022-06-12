@@ -2,7 +2,7 @@
 // here is test file
 int main()
 {
-    int a ;
+    int a ,b,c;
     a = 5;
     while (a < 10)
     {
