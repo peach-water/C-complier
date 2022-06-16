@@ -2,7 +2,7 @@
 // here is test file
 int main()
 {
-    int a ,b,c;
+    int a, b, c;
     a = 5;
     while (a < 10)
     {
@@ -12,6 +12,8 @@ int main()
             break;
         }
     }
-    print("%d", 10);
+    while (1){
+
+    }
     return 0;
 }

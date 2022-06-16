@@ -33,13 +33,17 @@ r: b
 # unitTest
 ut: b
 	@./bin/$(BIN).bin ./test/$(t_objects).c 
+	@nasm -f elf32 -P"./src/macro.inc" -P"./test/$(t_objects).inc" -o $(t_objects).o ./test/$(t_objects).asm
+	@ld -m elf_i386 -o $(t_objects) $(t_objects).o
 
 clean:
 	@echo cleaning
 	@-rm -r ./bin ./test/*.asm ./test/*.inc ./y.* ./clang.c
+	@-rm $(t_objects) $(t_objects).o
 clear:
 	@echo cleaning
 	@-rm -r ./bin ./*.asm ./y.* ./clang.c
+	@-rm $(t_objects) $(t_objects).o
 
 #＄＊　不包含扩展名的目标文件名称
 
