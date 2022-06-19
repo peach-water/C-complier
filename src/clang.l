@@ -30,7 +30,6 @@ STRING              (\042[^\042\n]*\042)
 "void"              { return T_Void; }
 "return"            { return T_Return; }
 "print"             { return T_Print; }
-"readint"           { return T_ReadInt; }
 "while"             { return T_While; }
 "if"                { return T_If; }
 "else"              { return T_Else; }

@@ -47,7 +47,7 @@ void write_func_tail();
 %}
 
 %token T_Void T_Int T_While T_If T_Else T_Return T_Break T_Continue
-%token T_Print T_ReadInt T_Le T_Ge T_Eq T_Ne T_And T_Or
+%token T_Print T_Le T_Ge T_Eq T_Ne T_And T_Or
 %token T_IntConstant T_StringConstant T_Identifier
 
 %left '='
@@ -213,14 +213,8 @@ Expr:
 |   Expr T_And Expr         { out_asm("\tand"); }
 |   '-' Expr %prec '!'      { out_asm("\tneg"); }
 |   '!' Expr                { out_asm("\tnot"); }
-|   ReadInt                 { /* empty */ }
 |   CallExpr                { /* empty */ }
 |   '(' Expr ')'            { /* empty */ }
-;
-
-ReadInt:
-    T_ReadInt '(' T_StringConstant ')'
-                            { out_asm("\treadint %s", $3); }
 ;
 
 CallExpr:
