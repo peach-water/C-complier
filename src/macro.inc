@@ -8,15 +8,6 @@
         ADD ESP, EAX
 %ENDMACRO
 
-%MACRO readint 1
-    [SECTION .DATA]
-        %%STRING:   DB %1, 0
-    [SECTION .TEXT]
-        PUSH DWORD %%STRING
-        CALL READINT
-        MOV [ESP], EAX
-%ENDMACRO
-
 %MACRO exit 1
     MOV EAX, 1
     MOV EBX, %1
@@ -198,7 +189,7 @@
     RET
 %ENDMACRO
 
-EXTERN printf, READINT
+EXTERN printf
 GLOBAL _start
 
 [SECTION .TEXT]
