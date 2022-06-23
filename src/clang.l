@@ -4,7 +4,6 @@
 int cur_line = 1;
 void yyerror(const char *msg);
 void unrecognized_char(char c);
-void unterminate_string();
 #define _DUPTEXT {yylval = strdup(yytext);}
 %}
 
@@ -13,10 +12,9 @@ WHITESPACE          ([ \t\r\a]+)
 SINGLE_COMMENT1     ("//"[^\n]*)
 SINGLE_COMMENT2     ("#"[^\n]*)
 OPERATOR            ([+*-/%=,;!<>(){}])
-INTEGER             ([0-9]+)
+INTEGER             ([1-9][0-9]*)
 FLOAT               ([0-9]+.[0-9]+)
 IDENTIFIER          ([_a-zA-Z][_a-zA-Z0-9]*)
-UNTERM_STRING       (\042[^\042\n]*)
 STRING              (\042[^\042\n]*\042)
 
 %%
@@ -48,7 +46,6 @@ STRING              (\042[^\042\n]*\042)
 {STRING}            { _DUPTEXT return T_StringConstant; }
 {IDENTIFIER}        { _DUPTEXT return T_Identifier; }
 
-{UNTERM_STRING}     { unterminate_string(); }
 .                   { unrecognized_char(yytext[0]); }
 
 %%
@@ -61,10 +58,6 @@ void unrecognized_char(char c) {
     char buf[32] = "Unrecognized character: ?";
     buf[24] = c;
     yyerror(buf);
-}
-
-void unterminate_string() {
-    yyerror("Unterminate string constant");
 }
 
 void yyerror(const char *msg) {
