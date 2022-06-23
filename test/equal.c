@@ -26,9 +26,11 @@ int main()
 
 int factor(int n)
 {
-    if (n <= 1){
+    int i;
+    i = n;
+    if (i <= 1){
         return 1;
     }else{
-        return n * factor(n-1);
+        return i * factor(i-1);
     }
 }

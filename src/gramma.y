@@ -20,35 +20,33 @@ FILE *asmfile, *incfile;
 
 void file_error(char *msg);
 
-int ii = 0, itop = -1, istack[100];
-int ww = 0, wtop = -1, wstack[100];
+int ii = 0, itop = -1, istack[128];
+int wi = 0, wtop = -1, wstack[128];
 
 #define _BEG_IF     (istack[++itop] = ++ii)
 #define _END_IF     (itop--)
 #define _i          (istack[itop])
 
-#define _BEG_WHILE  (wstack[++wtop] = ++ww)
+#define _BEG_WHILE  (wstack[++wtop] = ++wi)
 #define _END_WHILE  (wtop--)
 #define _w          (wstack[wtop])
 
 int argc = 0, varc = 0;
-char *cur_func_name, *args[128], *vars[128];
-void write_func_head();
-void write_func_tail();
+char *_fn, *args[128], *vars[128];
+void _WRITE_FUNCHEAD();
+void _END_FUNCDEF();
 
-#define _BEG_FUNCDEF(name)  (cur_func_name = (name))
+#define _BEG_FUNCDEF(name)  (_fn = (name))
 #define _APPEND_ARG(arg)    (args[argc++] = (arg))
 #define _APPEND_VAR(var)    (vars[varc++] = (var))
-#define _WRITE_FUNCHEAD     write_func_head
-#define _END_FUNCDEF        write_func_tail
 
 #define YYSTYPE char *
 
 %}
 
-%token T_Void T_Int T_While T_If T_Else T_Return T_Break T_Continue
-%token T_Print T_Le T_Ge T_Eq T_Ne T_And T_Or
-%token T_IntConstant T_StringConstant T_Identifier
+%token T_Void T_Int T_While T_If T_Else T_Return T_Break T_Continue T_Print
+%token T_Le T_Ge T_Eq T_Ne T_And T_Or
+%token T_IntConstant T_StringConstant T_Identifier T_FloatConstant
 
 %left '='
 %left T_Or
@@ -62,17 +60,17 @@ void write_func_tail();
 %%
 
 Start:
-    Program                         { /* empty */ }
+    Func                            { /* empty */ }
 ;
 
-Program:
+Func:
     /* empty */                     { /* empty */ }
-|   Program FuncDef                 { /* empty */ }
+|   Func FuncDef                    { /* empty */ }
 ;
 
 FuncDef:
-    T_Int  FuncName Args Vars Stmts EndFuncDef
-|   T_Void FuncName Args Vars Stmts EndFuncDef
+    T_Int  FuncName Args Vars Modules EndFuncDef
+|   T_Void FuncName Args Vars Modules EndFuncDef
 ;
 
 FuncName:
@@ -103,38 +101,34 @@ Var:
 |   Var ',' T_Identifier            { _APPEND_VAR($3); }
 ;
 
-Stmts:
+Modules:
     /* empty */                     { /* empty */ }
-|   Stmts Stmt                      { /* empty */ }
+|   Modules Module                  { /* empty */ }
 ;
 
-EndFuncDef:
-    '}'                             { _END_FUNCDEF(); }
+Module:
+    AssignModule                    { /* empty */ }
+|   IfModule                        { /* empty */ }
+|   WhileModule                     { /* empty */ }
+|   BreakModule                     { /* empty */ }
+|   ContinueModule                  { /* empty */ }
+|   CallModule                      { /* empty */ }
+|   ReturnModule                    { /* empty */ }
+|   PrintModule                     { /* empty */ }
 ;
 
-Stmt:
-    AssignStmt                      { /* empty */ }
-|   CallStmt                        { /* empty */ }
-|   IfStmt                          { /* empty */ }
-|   WhileStmt                       { /* empty */ }
-|   BreakStmt                       { /* empty */ }
-|   ContinueStmt                    { /* empty */ }
-|   ReturnStmt                      { /* empty */ }
-|   PrintStmt                       { /* empty */ }
-;
-
-AssignStmt:
+AssignModule:
     T_Identifier '=' Expr ';'       { out_asm("\tpop %s", $1); }
 ;
 
-CallStmt:
+CallModule:
     CallExpr ';'                    { out_asm("\tpop"); }
 ;
 
-IfStmt:
-    If '(' Expr ')' Then '{' Stmts '}' EndThen EndIf
+IfModule:
+    If '(' Expr ')' Then '{' Modules '}' EndThen EndIf
                                     { /* empty */ }
-|   If '(' Expr ')' Then '{' Stmts '}' EndThen T_Else '{' Stmts '}' EndIf
+|   If '(' Expr ')' Then '{' Modules '}' EndThen T_Else '{' Modules '}' EndIf
                                     { /* empty */ }
 ;
 
@@ -154,8 +148,8 @@ EndIf:
     /* empty */     { out_asm("_endIf_%d:", _i); _END_IF; }
 ;
 
-WhileStmt:
-    While '(' Expr ')' Do '{' Stmts '}' EndWhile
+WhileModule:
+    While '(' Expr ')' Do '{' Modules '}' EndWhile
                     { /* empty */ }
 ;
 
@@ -172,32 +166,35 @@ EndWhile:
                                                 _w, _w); _END_WHILE; }
 ;
 
-BreakStmt:
+BreakModule:
     T_Break ';'     { out_asm("\tjmp _endWhile_%d", _w); }
 ;
 
-ContinueStmt:
+ContinueModule:
     T_Continue ';'  { out_asm("\tjmp _begWhile_%d", _w); }
 ;
 
-ReturnStmt:
+ReturnModule:
     T_Return ';'            { out_asm("\tret"); }
 |   T_Return Expr ';'       { out_asm("\tret ~"); }
 ;
 
-PrintStmt:
-    T_Print '(' T_StringConstant PrintIntArgs ')' ';'
+PrintModule:
+    T_Print '(' T_StringConstant PrintArgs ')' ';'
                             { out_asm("\tprint %s", $3); }
 ;
 
-PrintIntArgs:
+PrintArgs:
     /* empty */             { /* empty */ }
-|   PrintIntArgs ',' Expr   { /* empty */ }
+|   PrintArgs ',' Expr      { /* empty */ }
 ;
 
 Expr:
     T_IntConstant           { out_asm("\tpush %s", $1); }
 |   T_Identifier            { out_asm("\tpush %s", $1); }
+|   '-' Expr %prec '!'      { out_asm("\tneg"); }
+|   '!' Expr                { out_asm("\tnot"); }
+|   CallExpr                { /* empty */ }
 |   Expr '+' Expr           { out_asm("\tadd"); }
 |   Expr '-' Expr           { out_asm("\tsub"); }
 |   Expr '*' Expr           { out_asm("\tmul"); }
@@ -211,25 +208,25 @@ Expr:
 |   Expr T_Ne Expr          { out_asm("\tcmpne"); }
 |   Expr T_Or Expr          { out_asm("\tor"); }
 |   Expr T_And Expr         { out_asm("\tand"); }
-|   '-' Expr %prec '!'      { out_asm("\tneg"); }
-|   '!' Expr                { out_asm("\tnot"); }
-|   CallExpr                { /* empty */ }
 |   '(' Expr ')'            { /* empty */ }
 ;
 
 CallExpr:
-    T_Identifier Actuals
-                            { out_asm("\t$%s", $1); }
+    T_Identifier Parameters { out_asm("\t$%s", $1); }
 ;
 
-Actuals:
+Parameters:
     '(' ')'
-|   '(' _Actuals ')'
+|   '(' _Parameters ')'
 ;
 
-_Actuals:
+_Parameters:
     Expr
-|   _Actuals ',' Expr
+|   Expr ',' _Parameters
+;
+
+EndFuncDef:
+    '}'                             { _END_FUNCDEF(); }
 ;
 
 %%
@@ -242,40 +239,41 @@ int main(int argc, char *argv[]) {
 
 void init_parser(int argc, char *argv[]) {
     if (argc < 2) {
-        file_error("Must provide an input source file!");
+        file_error("Must provide an source file!");
     }
 
     if (argc > 2) {
-        file_error("Too much command line arguments!");
+        file_error("Too much arguments!");
     }
 
-    char *in_file_name = argv[1];
-    int len = strlen(in_file_name);
+    char *InFileName = argv[1];
+    int len = strlen(InFileName);
 
-    if (len <= 2 || in_file_name[len-1] != 'c' \
-            || in_file_name[len-2] != '.') {
+    if (len <= 2 || InFileName[len-1] != 'c' \
+            || InFileName[len-2] != '.') {
         file_error("Must provide an '.c' source file!");
     }
 
-    if (!(yyin = fopen(in_file_name, "r"))) {
+    if (!(yyin = fopen(InFileName, "r"))) {
         file_error("Input file open error");
     }
 
-    char out_file_name[BUFSIZE];
-    strcpy(out_file_name, in_file_name);
+    char OutFileName[BUFSIZE];
+    strcpy(OutFileName, InFileName);
 
-    out_file_name[len-1] = 'a';
-    out_file_name[len]   = 's';
-    out_file_name[len+1] = 'm';
-    out_file_name[len+2] = '\0';
-    if (!(asmfile = fopen(out_file_name, "w"))) {
+    OutFileName[len-1] = 'a';
+    OutFileName[len]   = 's';
+    OutFileName[len+1] = 'm';
+    OutFileName[len+2] = '\0';
+    if (!(asmfile = fopen(OutFileName, "w"))) {
         file_error("Output 'asm' file open error");
     }
 
-    out_file_name[len-1] = 'i';
-    out_file_name[len]   = 'n';
-    out_file_name[len+1] = 'c';
-    if (!(incfile = fopen(out_file_name, "w"))) {
+    OutFileName[len-1] = 'i';
+    OutFileName[len]   = 'n';
+    OutFileName[len+1] = 'c';
+    OutFileName[len+2] = '\0';
+    if (!(incfile = fopen(OutFileName, "w"))) {
         file_error("Output 'inc' file open error");
     }
 }
@@ -295,9 +293,7 @@ char *cat_strs(char *buf, char *strs[], int strc) {
     return buf;
 }
 
-#define _fn (cur_func_name)
-
-void write_func_head() {
+void _WRITE_FUNCHEAD() {
     char buf[BUFSIZE];
     int i;
 
@@ -309,7 +305,7 @@ void write_func_head() {
         out_asm("\t%s.var %s", _fn, cat_strs(buf, vars, varc));
     }
 
-    out_inc("; ==== begin function `%s` ====", _fn);
+    out_inc("; ==== `%s` begin ====", _fn);
     out_inc("%%define %s.argc %d", _fn, argc);
     out_inc("\n%%MACRO $%s 0\n"
             "   CALL @%s\n"
@@ -337,7 +333,7 @@ void write_func_head() {
     }
 }
 
-void write_func_tail() {
+void _END_FUNCDEF() {
     int i;
 
     out_asm("ENDFUNC@%s\n", _fn);
@@ -350,7 +346,7 @@ void write_func_tail() {
         out_inc("\t%%undef %s", vars[i]);
     }
     out_inc("%%ENDMACRO");
-    out_inc("; ==== end function `%s`   ====\n", _fn);
+    out_inc("; ==== `%s` end ====\n", _fn);
 
     argc = 0;
     varc = 0;
